@@ -1,0 +1,54 @@
+<div class="wide-container half-gutter" data-section-type="list-collections" data-cc-animate data-cc-animate-delay="0.6s">
+  {% if section.settings.layout == 'rows' %}
+    {% if section.settings.grid == 2 %}
+      {% assign product_class = 'column half' %}
+    {% elsif section.settings.grid == 3 %}
+      {% assign product_class = 'column third' %}
+    {% else %}
+      {% assign product_class = 'column quarter' %}
+    {% endif %}
+  {% endif %}
+
+  <div class="product-list product-list--{{ section.settings.layout }} {% if section.settings.layout == 'columns' %}jiggly-split dynamic-col-{{ section.settings.grid }}{% else %}grid--uniform{% endif %}">
+    {% for link in linklists[page.handle].links %}
+      {% if link.type == 'collection_link' %}
+        {% assign collection = link.object %}
+        {% render 'collection-block', collection: collection, product_class: product_class, i: forloop.index %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Collection list",
+    "settings": [
+      {
+        "type": "select",
+        "id": "layout",
+        "label": "Collection layout",
+        "options": [
+          {
+            "value": "columns",
+            "label": "Collage"
+          },
+          {
+            "value": "rows",
+            "label": "Grid"
+          }
+        ],
+        "default": "rows",
+        "info": "Collage will only work when the 'Image shape' is set to Natural - in Collections / Image shape"
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Collections per row",
+        "min": 2,
+        "max": 4,
+        "default": 3
+      }
+    ]
+  }
+{% endschema %}

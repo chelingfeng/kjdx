@@ -1,0 +1,197 @@
+<!doctype html>
+<html class="no-js" lang="{{ shop.locale }}">
+<head>
+  <!-- Showcase 4.0.12 -->
+
+  <link rel="preload" href="{{ 'styles.css' | asset_url }}" as="style">
+
+  {% render 'head-tag' %}
+  {%- assign base_font = settings.type_base_font -%}
+  {%- assign base_font_medium = base_font | font_modify: 'weight', '500' -%}
+  {%- assign base_font_semibold = base_font | font_modify: 'weight', '600' -%}
+  {%- if base_font_medium -%}<link rel="preload" as="font" href="{{ base_font_medium | font_url }}" type="font/woff2" crossorigin>{%- endif -%}
+  {%- if base_font_semibold -%}<link rel="preload" as="font" href="{{ base_font_semibold | font_url }}" type="font/woff2" crossorigin>{%- endif -%}
+
+  <meta name="theme-color" content="{{ settings.col_btn_bg }}">
+
+  <title>
+    {{ page_title }}{% if current_tags %}{% assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags }}{% endif %}{% if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}
+  </title>
+
+  {% render 'social-meta-tags' %}
+
+  {{ 'styles.css' | asset_url | stylesheet_tag }}
+
+  {{ content_for_header }}
+
+  <script>
+    document.documentElement.className = document.documentElement.className.replace('no-js', '');
+    window.theme = window.theme || {};
+    theme.money_format = {{ shop.money_format | json }};
+    theme.money_container = '.theme-money';
+    theme.strings = {
+      previous: {{ 'general.accessibility_labels.previous' | t | json }},
+      next: {{ 'general.accessibility_labels.next' | t | json }},
+      close: {{ 'general.accessibility_labels.close' | t | json }},
+      addressError: {{ 'map.errors.address_error' | t | json }},
+      addressNoResults: {{ 'map.errors.address_no_results' | t | json }},
+      addressQueryLimit: {{ 'map.errors.address_query_limit_html' | t | json }},
+      authError: {{ 'map.errors.auth_error' | t | json }},
+      back: {{ 'layout.navigation.back' | t | json }},
+      cartConfirmation: {{ 'cart.terms.confirmation' | t | json }},
+      loadMore: {{ 'general.accessibility_labels.load_more' | t | json }},
+      infiniteScrollNoMore: {{ 'collections.general.infinite_scroll_no_more' | t | json }},
+      priceNonExistent: {{ 'products.variant.non_existent' | t | json }},
+      buttonDefault: {{ 'products.product.add_to_cart' | t | json }},
+      buttonNoStock: {{ 'products.variant.out_of_stock' | t | json }},
+      buttonNoVariant: {{ 'products.variant.non_existent' | t | json }},
+      variantNoStock: {{ 'products.variant.no_stock' | t | json }},
+      unitPriceSeparator: {{ 'products.product.unit_price_separator' | t | json }},
+      colorBoxPrevious: {{ 'general.lightbox.previous' | t | json }},
+      colorBoxNext: {{ 'general.lightbox.next' | t | json }},
+      colorBoxClose: {{ 'general.lightbox.close' | t | json }},
+      navigateHome: {{ 'layout.navigation.home' | t | json }},
+      productAddingToCart: {{ 'products.product.adding_to_cart' | t | json }},
+      productAddedToCart: {{ 'products.product.added_to_cart' | t | json }},
+      popupWasAdded: {{ 'products.product.popup_was_added' | t | json }},
+      popupCheckout: {{ 'products.product.popup_checkout' | t | json }},
+      popupContinueShopping: {{ 'products.product.popup_continue_shopping' | t | json }},
+      onlyXLeft: {{ 'products.labels.only_x_left' | t: quantity: '[[ quantity ]]' | json }},
+      priceSoldOut: {{ 'products.labels.sold_out' | t | json }},
+      loading: {{ 'products.listing.loading' | t | json }},
+      viewCart: {{ 'layout.cart_summary.cart' | t | json }},
+      page: {{ 'general.meta.page' | t | json }},
+      imageSlider: {{ 'general.slider.images' | t | json }},
+      clearAll: {{ 'collections.filtering.clear_all' | t | json }}
+    };
+    theme.routes = {
+      search_url: '{{ routes.search_url }}',
+      cart_url: '{{ routes.cart_url }}',
+      cart_add_url: '{{ routes.cart_add_url }}',
+      checkout: '/checkout'
+    };
+    theme.settings = {
+      productImageParallax: {{ settings.animation_parallax_prod_image | json }},
+      animationEnabledDesktop: {{ settings.animation_enabled_desktop | json }},
+      animationEnabledMobile: false
+    };
+
+    theme.checkViewportFillers = function(){
+      var toggleState = false;
+      var elPageContent = document.getElementById('page-content');
+      if(elPageContent) {
+        var elOverlapSection = elPageContent.querySelector('.header-overlap-section');
+        if (elOverlapSection) {
+          var padding = parseInt(getComputedStyle(elPageContent).getPropertyValue('padding-top'));
+          toggleState = ((Math.round(elOverlapSection.offsetTop) - padding) === 0);
+        }
+      }
+      if(toggleState) {
+        document.getElementsByTagName('body')[0].classList.add('header-section-overlap');
+      } else {
+        document.getElementsByTagName('body')[0].classList.remove('header-section-overlap');
+      }
+    };
+
+    theme.assessAltLogo = function(){
+      var elsOverlappers = document.querySelectorAll('.needs-alt-logo');
+      var useAltLogo = false;
+      if(elsOverlappers.length) {
+        var elSiteControlInner = document.querySelector('#site-control .site-control__inner');
+        var headerMid = elSiteControlInner.offsetTop + elSiteControlInner.offsetParent.offsetTop + elSiteControlInner.offsetHeight / 2;
+        Array.prototype.forEach.call(elsOverlappers, function(el, i){
+          var thisTop = el.getBoundingClientRect().top + document.body.scrollTop;
+          var thisBottom = thisTop + el.offsetHeight;
+          if(headerMid > thisTop && headerMid < thisBottom) {
+            useAltLogo = true;
+            return false;
+          }
+        });
+      }
+      if(useAltLogo) {
+        document.getElementsByTagName('body')[0].classList.add('use-alt-logo');
+      } else {
+        document.getElementsByTagName('body')[0].classList.remove('use-alt-logo');
+      }
+    };
+  </script>
+
+	  
+<!-- RYVIU APP :: Settings global -->	
+    <script> var ryviu_global_settings = {{shop.metafields.ryviu.user_settings }};</script>
+<!-- RYVIU APP -->
+</head>
+
+<body id="page-{{ page_title | handle }}" class="page-{{ page_title | handle }} {% if customer %}customer-logged-in {% endif %}template-{{ template | replace: '.', ' ' | truncatewords: 1, '' | handle }}{% if template.suffix != blank %} template-suffix-{{ template.suffix }}{% endif %}{% if template contains 'customers' %} template-customer-area{% endif %}{% if logo_html contains 'img' %} has-logo{% endif %}">
+  {% if settings.animation_enabled_desktop %}
+    <script>
+      var body = document.body;
+      if(window.innerWidth < 768) {
+        var pageFadedIn = false;
+        body.style.opacity = 0;
+
+        function fadeInPageMob(){
+          if(!pageFadedIn) {
+            body.classList.add("cc-animate-enabled");
+            body.style.transition = 'opacity 0.4s';
+            setTimeout(function () {
+              body.style.opacity = 1;
+            }, 200);
+            pageFadedIn = true;
+          }
+        }
+
+        window.onload = fadeInPageMob;
+        setTimeout(fadeInPageMob, 3000);
+
+        window.onpageshow = function(){
+          document.getElementById('cc-veil').classList.remove('-in');
+        }
+      }else{
+        body.classList.add("cc-animate-enabled");
+      }
+    </script>
+  {% endif %}
+
+  <a class="skip-link visually-hidden" href="#page-content">{{ 'general.accessibility_labels.skip_to_content' | t }}</a>
+
+  {% section 'header' %}
+
+  <main id="page-content">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'popup' %}
+  {% section 'footer' %}
+
+  <!-- Search form -->
+  <div id="search-modal" class="theme-modal" tabindex="-1">
+    <div class="inner">
+      <div class="container growth-area">
+        <form action="{{ routes.search_url }}" method="get" class="search-form" role="search">
+          {% comment %} Remove the following line to search everything, not just products {% endcomment %}
+          <input type="hidden" name="type" value="product">
+
+          <div class="inline-mini-form inline-mini-form--arrow">
+            <input type="text" name="q"
+                   placeholder="{{ 'general.search.page_placeholder' | t }}"
+                   class="focus-me"
+                   value="{{ search.terms | escape }}"
+                   aria-label="{{ 'general.search.input_label' | t | escape }}"
+                   autocomplete="off" required />
+            <button class="compact no-hover" type="submit" aria-label="{{ 'general.search.search_button' | t | escape }}"
+            >{% render 'svg-rarrow-long' %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="cc-veil"></div>
+
+  <script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+
+  {% render 'body-end-tag' %}
+</body>
+</html>

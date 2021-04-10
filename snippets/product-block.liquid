@@ -1,0 +1,72 @@
+{%- liquid
+  assign on_sale = false
+  if product.compare_at_price > product.price
+    assign on_sale = true
+  endif
+
+  assign product_url = product.url | within: collection
+
+  if animation_type == blank
+    assign animation_type = "cc-fade-in-up"
+  endif
+
+  assign primary_image = product.featured_media.preview_image
+  assign secondary_image = product.media[1].preview_image
+-%}
+
+<div class="product-block
+  {% unless product.available %} sold-out{% endunless %}
+  {% if on_sale %} on-sale{% endif %}
+  hover-{{ settings.prod_hover_effect }}
+  {% if product.tags contains 'meta-layout-right' %}layout-right{% endif %}
+  {% if settings.prod_label_layout == 'marquee_on_hover' %} product-block--marquee-on-hover {% endif%}
+  {{ product_class }}"
+     data-loop-index="{{ i }}"
+  {% if animate %} data-cc-animate="{{ animation_type }}" data-cc-animate-delay="{{ animate | times: 0.15 }}s" {% endif %}>
+
+  <div class="product-block__inner">
+    <div class="image {% if settings.prod_hover_effect == 'image' and product.media.size > 1 %}image--hover-second {% if primary_image.aspect_ratio == secondary_image.aspect_ratio %}image--same-aspect-ratio{% endif %}{% endif %}">
+      {% if settings.prod_label_layout contains 'marquee' %}
+        {% render 'product-label', product: product %}
+      {% endif %}
+
+      <a data-cc-animate-click class="image-inner" href="{{ product_url }}" aria-label="{{ product.title | escape }}" tabindex="-1">
+        <div class="image__first">
+          {% render 'responsive-image', image: primary_image %}
+
+          {% unless settings.prod_label_layout contains 'marquee' %}
+            {% render 'product-label', product: product %}
+          {% endunless %}
+        </div>
+
+        {% if settings.prod_hover_effect == 'image' and product.media.size > 1 %}
+        <div class="image__second">
+          {% render 'responsive-image', image: secondary_image, aspect_ratio: primary_image.aspect_ratio %}
+        </div>
+        {% endif %}
+      </a>
+    </div>
+    <a data-cc-animate-click href="{{ product_url }}" class="caption upper">
+      <span class="title">{{ product.title }}</span>
+
+      {% if show_vendor %}
+        <span class="vendor">{{ product.vendor }}</span>
+      {% endif %}
+
+      <div class="price">
+        {% if product.price_varies %}{{ 'products.listing.from' | t }}{% endif %}
+        <span class="theme-money">{{ product.price | money }}</span>
+        {% if on_sale %}<span class="was-price theme-money">{{ product.compare_at_price | money }}</span>{% endif %}
+
+        {%- assign variant = product.variants | sort: 'price' | first -%}
+        {% render 'unit-price', variant: variant %}
+      </div>
+    </a>
+
+    {% if settings.show_product_block_reviews %}
+    <a data-cc-animate-click href="{{ product_url }}" class="themed-product-reviews" tabindex="-1">
+      <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+    </a>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,290 @@
+{%
+  render 'product-form',
+    section: section,
+    product: product,
+    is_featured_product: false
+%}
+
+{% schema %}
+  {
+    "name": "Product pages",
+    "class": "section-product-template",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Page Layout"
+      },
+      {
+        "type": "select",
+        "id": "media_style",
+        "label": "Display style",
+        "default": "one-column",
+        "options": [
+          {
+            "value": "one-column",
+            "label": "One column"
+          },
+          {
+            "value": "two-column",
+            "label": "Two column"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "variant_style",
+        "default": "underlined",
+        "label": "Variant display style",
+        "options": [
+          {
+            "label": "Dropdown",
+            "value": "dropdown"
+          },
+          {
+            "label": "Underlined",
+            "value": "underlined"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "When 'Add to Cart' is clicked",
+        "default": "",
+        "options": [
+          {
+            "value": "",
+            "label": "Stay on the same page"
+          },
+          {
+            "value": "add_in_modal",
+            "label": "Open popup with checkout button"
+          },
+          {
+            "value": "add_in_modal_no_checkout",
+            "label": "Open popup without checkout button"
+          },
+          {
+            "value": "go_to_cart",
+            "label": "Go to cart page"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "full_width",
+        "default": true,
+        "label": "Page is full width of the screen"
+      },
+      {
+        "type": "checkbox",
+        "id": "sticky_product_form",
+        "default": true,
+        "label": "Product details stick on scroll"
+      },
+      {
+        "type": "checkbox",
+        "id": "description_under_title",
+        "label": "Show the product description under the product title",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Product Details"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_tax_and_shipping",
+        "label": "Show tax status and shipping policy link",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "default": true,
+        "label": "Show product vendor"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_sku",
+        "label": "Show SKU",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_type",
+        "default": false,
+        "label": "Show type"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_quantity_selector",
+        "default": true,
+        "label": "Show quantity selector"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_payment_button",
+        "label": "Show dynamic checkout button",
+        "info": "Each customer will see their preferred payment method from those available on your store, such as PayPal or Apple Pay. [Learn more](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_mobile_sticky_cart",
+        "label": "Show a sticky Add to Cart button on mobile",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_sharing_links",
+        "label": "Show social sharing icons",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Inventory"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_backorder_text",
+        "label": "Show backorder text",
+        "default": true,
+        "info": "Only shows for products which use Shopify inventory tracking and are available to purchase when out of stock."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_inventory_notice",
+        "label": "Show inventory notice",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "inventory_notice_threshold",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Inventory threshold",
+        "info": "Show inventory quantities below this threshold. Choose 0 to show full amount.",
+        "default": 10
+      },
+      {
+        "type": "checkbox",
+        "id": "show_realtime_availability",
+        "label": "Cross out unavailable options every time someone changes a variant",
+        "info": "Only applies when the 'Variant display style' is Underlined.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_pickup_availability",
+        "label": "Show pickup availability",
+        "default": true,
+        "info": "Show customers where they can pick up the product. [Learn more](https://help.shopify.com/en/manual/shipping/setting-up-and-managing-your-shipping/local-methods/local-pickup)"
+      },
+      {
+        "type": "header",
+        "content": "Media"
+      },
+      {
+        "type": "paragraph",
+        "content": "Learn more about [media types](https://help.shopify.com/en/manual/products/product-media)"
+      },
+      {
+        "type": "select",
+        "id": "slide_nav_style",
+        "label": "Slide navigation style",
+        "default": "dots",
+        "options": [
+          {
+            "value": "dots",
+            "label": "Dots"
+          },
+          {
+            "value": "arrows",
+            "label": "Arrows"
+          }
+        ],
+        "info": "Only applies to mobile"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_thumbnails",
+        "default": true,
+        "label": "Show thumbnails",
+        "info": "Only applies to a One Column display style"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_zoom",
+        "default": true,
+        "label": "Enable image zoom"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_video_looping",
+        "label": "Enable video looping",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "scroll_to_variant_media",
+        "label": "Scroll to the relevant media when the variant is changed",
+        "info": "Only applies to desktop",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Description"
+      },
+      {
+        "type": "select",
+        "id": "description_style",
+        "label": "Display style",
+        "default": "accordion",
+        "options": [
+          {
+            "value": "accordion",
+            "label": "Expandable boxes"
+          },
+          {
+            "value": "tab",
+            "label": "Tabs"
+          }
+        ]
+      },
+      {
+        "type": "page",
+        "id": "tab_2_page",
+        "label": "First page"
+      },
+      {
+        "type": "page",
+        "id": "tab_3_page",
+        "label": "Second page"
+      },
+      {
+        "type": "header",
+        "content": "Size chart"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_size_chart",
+        "label": "Enable",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "size_chart_variant",
+        "label": "Option name",
+        "default": "Size",
+        "info": "Enter the name of the option which changes the size of the product. For example, 'Size' or 'Length'. [Learn more](https://cleancanvas.co.uk/support/general/size-chart)"
+      },
+      {
+        "type": "page",
+        "id": "size_chart_page",
+        "label": "Page containing size chart"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,603 @@
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- assign featured_media = product.selected_or_first_available_variant.featured_media | default: product.featured_media -%}
+{%- assign media_columns_to_show = 1 %}
+{%- assign swatch_option_name_lowercase = settings.swatch_option_name | downcase -%}
+
+{%- if section.settings.media_style != 'one-column' and product.media.size > 1 -%}
+  {%- if section.settings.media_style == 'two-column' -%}
+    {%- assign media_columns_to_show = 2 -%}
+    {%- elsif section.settings.media_style == 'three-column' -%}
+    {%- assign media_columns_to_show = 3 -%}
+  {%- endif -%}
+{%- endif -%}
+
+<div class="product-area
+      {% if product.media.size == 1 %}product-area--loner{% endif %}
+      {% unless section.settings.full_width or is_featured_product %} product-area--restrict-width{% endunless %}
+      {% if section.settings.media_style == 'one-column' %}product-area--one-col {% if section.settings.full_width %}header-overlap-section{% endif %} {% endif %}
+      {% if section.settings.media_style == 'two-column' %}product-area--two-col {% endif %}"
+     data-section-type="product-template"
+     data-components="tabs"
+     data-is-featured-product="{{ is_featured_product }}">
+  <style type="text/css">
+    {% for media in product.media %}
+    @media(max-width:767px){
+        .product-area__details__thumbs__thumb-{{ forloop.index }} .rimage-outer-wrapper {
+            width: {{ media.preview_image.aspect_ratio | times: 70 | floor }}px;
+        }
+    }
+    {% endfor %}
+  </style>
+
+  {% if section.settings.enable_mobile_sticky_cart %}
+    <div class="product-area__add-to-cart-xs footer-button-xs" data-cc-animate="cc-fade-in-up" data-cc-animate-delay="1s">
+      <button class="button no-hover">{{ 'products.product.add_to_cart' | t }}</button>
+    </div>
+  {% endif %}
+
+  <div class="product-area__media {% if media_columns_to_show != 1 %}multi-column{% endif %}"
+       data-cc-animate data-cc-animate-duration="2s">
+
+    <div class="theme-gallery product-slider
+        {% if product.media.size == 1 %}theme-gallery--loner{% endif %}
+        {% if section.settings.enable_zoom %}theme-gallery--zoom-enabled{% endif %}
+        {% if section.settings.show_thumbnails and product.media.size > 1 and media_columns_to_show == 1 %}theme-gallery--thumbs-enabled{% endif %}"
+         data-column-count="{{ media_columns_to_show }}"
+         data-scroll-to-variant-media="{{ section.settings.scroll_to_variant_media }}"
+    >
+      <div class="theme-viewport swiper-container" data-swiper-nav-style="{{ section.settings.slide_nav_style }}">
+        <div class="theme-images swiper-wrapper">
+          {% if product != blank %}
+            {% for media in product.media %}
+              <div class="theme-img theme-img-{{ forloop.index }} swiper-slide {% if featured_media == media %}current-img{% endif %}"
+                {% if media.media_type == "image" %}
+                  data-full-size="{{ media.preview_image | img_url: 'master' }}"
+                {% endif %}
+              >
+                {%- if media_columns_to_show != 1 -%}
+                  {% render 'media', media: media, animation_type: 'cc-fade-in' %}
+                {%- else -%}
+                  {%- if is_featured_product -%}
+                    {% assign animate_delay = forloop.index | times: 0.15 %}
+                    {% render 'media', media: media, animate: false, animation_type: "cc-fade-in-up" %}
+                  {%- else -%}
+                    {% render 'media', media: media %}
+                  {%- endif -%}
+                {%- endif -%}
+
+              </div>
+            {% endfor %}
+            {% elsif is_featured_product %}
+            {% for i in (1..5) %}
+              <div class="theme-img theme-img-{{ forloop.index }} swiper-slide {% if featured_media == media %}current-img{% endif %}">
+                {% capture placeholder_svg_name %}product-{{ i }}{% endcapture %}
+                <div class="placeholder-image">{{ placeholder_svg_name | placeholder_svg_tag }}</div>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+        <div class="swiper-pagination"></div>
+        <a href="#" class="swiper-button-prev" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'svg-chevron-left' %}</a>
+        <a href="#" class="swiper-button-next" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'svg-chevron-right' %}</a>
+      </div>
+    </div>
+
+    {%- assign models = product.media | where: 'media_type', 'model' -%}
+    {% if models.size > 0 %}
+      <script type="application/json" class="model-json">
+        {{- product.media | where: 'media_type', 'model' | json -}}
+      </script>
+
+      <button
+        class="view-in-space"
+        data-shopify-xr
+        data-shopify-model3d-first-id="{{ models.first.id }}"
+        data-shopify-model3d-id="{{ models.first.id }}"
+        data-shopify-first-title="{{ product.title | escape }}"
+        data-shopify-title="{{ product.title | escape }}"
+        data-shopify-xr-hidden>
+        {%- render 'icon-3d-badge-full-color' -%}
+        <span class="view-in-space__text">{{ 'products.product.view_in_space' | t }}</span>
+      </button>
+    {% endif %}
+  </div>
+
+  <div class="product-area__details product-detail">
+    <div class="product-area__details__inner {% if section.settings.sticky_product_form == false %}product-area__details__inner--not-sticky{% endif %}">
+      {%- if section.settings.show_thumbnails and product.media.size > 1 and media_columns_to_show == 1 -%}
+        <div class="product-area__details__thumbs" data-cc-animate>
+          <div class="carousel-wrapper">
+            <div class="carousel">
+              {% for media in product.media %}
+                <div class="product-area__details__thumbs__thumb product-area__details__thumbs__thumb-{{ forloop.index }} theme-gallery-thumb"
+                     data-media-id="{{ media.id }}">
+                  <a href="{{ media.preview_image.src | product_img_url: 'master' }}"
+                    {% if forloop.first %} class="thumb-active"{% endif %}
+                    aria-label="{{  media.alt | escape  }}"
+                  >
+                    {% render 'responsive-image', image: media.preview_image %}
+
+                    {%- if media.media_type == 'video' or media.media_type =='external_video' -%}
+                      <div class="thumbnail__badge">
+                        {% render 'icon-video-badge-full-color' %}
+                      </div>
+                    {%- endif -%}
+
+                    {%- if media.media_type == 'model' -%}
+                      <div class="thumbnail__badge">
+                        {% render 'icon-3d-badge-full-color' %}
+                      </div>
+                    {%- endif -%}
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {% if section.settings.show_type and product.type != blank %}
+        {% assign type_empty = false %}
+      {% else %}
+        {% assign type_empty = true %}
+      {% endif %}
+
+      {% if section.settings.show_vendor and product.vendor != blank %}
+        {% assign vendor_empty = false %}
+      {% else %}
+        {% assign vendor_empty = true %}
+      {% endif %}
+
+      {%- capture price_html -%}
+        <div class="product-area__col product-area__col--price {% if type_empty and vendor_empty %}price-area--no-vendor{% else %}price-area--has-vendor{% endif %}
+              {% if current_variant.unit_price_measurement %}price-area--has-unit-price{% else %}price-area--no-unit-price{% endif %}">
+          <div class="price-area" data-cc-animate
+               data-cc-animate-delay="0.25s" data-cc-animate-duration="1.5s">
+            {% if product != blank %}
+              {% if current_variant.compare_at_price > current_variant.price %}
+                <span class="was-price theme-money">{{ current_variant.compare_at_price | money }}</span>
+              {% endif %}
+              <div class="price theme-money">{{ current_variant.price | money }}</div>
+
+              {% render 'unit-price', variant: current_variant %}
+            {% else %}
+              <span class="was-price">{{ 2999 | money }}</span>
+              <div class="price">{{ 1999 | money }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {%- endcapture -%}
+
+      <div class="product-area__details__header" data-cc-animate>
+        {% if type_empty == false or vendor_empty == false %}
+          <div class="product-area__row" data-cc-animate data-cc-animate-delay="0.2s" data-cc-animate-duration="1.5s">
+            <div class="product-area__col">
+              <div class="product-detail__detail product-detail__brandrow vendor align-left">
+                {% if section.settings.show_vendor %}
+                  {% comment %}
+                    Do we have a collection that has the same name as our product vendor name?
+                    If we do, let's have the vendor link point to it.
+                    If not, we will point to the automatic vendor collection.
+                  {% endcomment %}
+                  {% assign product_vendor_handle = product.vendor | handle %}
+                  {% if collections[product_vendor_handle].handle == product_vendor_handle %}
+                    {% assign vendor_url = collections[product_vendor_handle].url %}
+                  {% else %}
+                    {% assign vendor_url = product.vendor | url_for_vendor %}
+                  {% endif %}
+                  <span class="brand">
+                    <a data-cc-animate-click href="{{ vendor_url }}">{{ product.vendor }}</a>
+                  </span>
+                {% endif %}
+
+                {% if section.settings.show_type %}
+                  {% assign product_type_handle = product.type | handle %}
+                  {% if collections[product_type_handle].handle == product_type_handle %}
+                    {% assign type_url = collections[product_type_handle].url %}
+                  {% else %}
+                    {% assign type_url = product.type | url_for_type %}
+                  {% endif %}
+
+                  {% if product.type != blank %}
+                    {% if vendor_url != blank %}<span class="brand-bullet">&bull;</span>{% endif %}
+
+                    <span class="type">
+                      <a data-cc-animate-click href="{{ type_url }}">
+                        {{ product.type }}
+                      </a>
+                    </span>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+            {{ price_html }}
+          </div>
+        {% endif %}
+
+        <div class="product-area__row">
+          <div class="product-area__col product-area__col--title">
+            {% if is_featured_product %}
+              <a data-cc-animate-click class="product-area__details__title h2" href="{{ product.url }}" data-cc-animate
+                 data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s">
+                {% if product != blank %}
+                  {{ product.title }}
+                {% else %}
+                  {{ 'onboarding.product.title' | t }}
+                {% endif %}
+              </a>
+            {% else %}
+              <h1 class="product-area__details__title h2" data-cc-animate
+                  data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s">{{ product.title }}</h1>
+            {% endif %}
+            {% if settings.enable_reviews %}
+              <div data-cc-animate data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s">
+                <span class="shopify-product-reviews-badge" data-cc-animate
+                      data-cc-animate-delay="2.5s" data-cc-animate-duration="1.5s" data-id="{{ product.id }}"></span>
+              </div>
+            {% endif %}
+          </div>
+          {% if type_empty == false or vendor_empty == false %}
+            <div class="product-area__col product-area__col--price">
+            </div>
+          {% else %}
+            {{ price_html }}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="product-detail__form">
+        {% if section.settings.description_under_title %}
+          <div class="product-detail__form__description rte align-left" data-cc-animate data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s" >
+            {%- if is_featured_product -%}
+              {{ section.settings.description }}
+            {%- else -%}
+              {{ product.description }}
+            {%- endif -%}
+
+            {% if section.settings.show_sku and product.selected_or_first_available_variant.sku != blank %}
+              <p class="sku {% if product.selected_or_first_available_variant.sku == blank %}sku--no-sku{% endif %} ">
+                {{ 'products.product.sku' | t }} <span class="sku__value">{{ product.selected_or_first_available_variant.sku }}</span>
+              </p>
+            {% endif %}
+          </div>
+        {%- endif -%}
+
+        {% if product != blank %}
+          {% capture product_form_class %}feedback-{{ section.settings.cart_type }}{% endcapture %}
+          {%- if product.featured_image == blank -%}
+            {%- assign image_thumb = product.media[0].preview_image.src | img_url: '300x300' %}
+          {%- else -%}
+            {% assign image_thumb = product.featured_image.src | img_url: '300x300' %}
+          {%- endif -%}
+
+          {%- if settings.swatch_enabled and settings.swatch_images -%}
+            <style>
+              {%- for product_option in product.options_with_values -%}
+              {% assign product_option_name_lowercase = product_option.name | downcase %}
+              {%- if product_option_name_lowercase == swatch_option_name_lowercase -%}
+              {%- for value in product_option.values -%}
+              {%- assign swatch_value = value | handle -%}
+              .option--{{ swatch_option_name_lowercase | handle }} select[data-colour-swatch="true"] + .clickyboxes .opt--{{ swatch_value }}::before {
+                  background-image: url({{ swatch_value | append: '.png' | file_img_url: '48x48', crop: 'center' }});
+              }
+              {%- endfor -%}
+              {%- endif -%}
+              {%- endfor -%}
+            </style>
+          {%- endif -%}
+
+          {% form 'product',
+            product,
+            class: product_form_class,
+            data-ajax-add-to-cart: true,
+            data-show-realtime-availability: section.settings.show_realtime_availability,
+            data-product-id: product.id,
+            data-enable-history-state: 'true' %}
+
+            <div class="cf" data-cc-animate data-cc-animate-delay="0.6s">
+              <div class="product-detail__form__options
+                product-detail__form__options--{{ section.settings.variant_style }}
+                {% if product.variants.size == 1 %}product-detail__form__options--no-options{% endif %}">
+
+                {% if product.variants.size > 1 %}
+                  <div class="option-selectors options-{{ product.options_with_values | size }}"
+                       data-cc-animate data-cc-animate-delay="0.35s" data-cc-animate-duration="1.5s">
+                    {% for option in product.options_with_values %}
+
+                      {% assign show_swatches = false %}
+                      {% assign option_name_lowercase = option.name | downcase %}
+                      {% if settings.swatch_enabled and option_name_lowercase == swatch_option_name_lowercase %}
+                        {% assign show_swatches = true %}
+                      {% endif %}
+
+                      <div class="selector-wrapper {% if show_swatches %} cc-swatches option--{{ option_name_lowercase | handle }}{% endif %}"
+                           data-option-name="{{ option.name }}">
+                        {% capture size_chart_html %}
+
+                        {%- assign option_name_lower = option.name | downcase -%}
+                        {%- assign target_option_name_lower = section.settings.size_chart_variant | downcase -%}
+                          {%- if section.settings.show_size_chart and option_name_lower == target_option_name_lower -%}
+                            <div class="size-chart-container">
+                              <a href="#size-chart-content" class="size-chart-link">{{ 'products.product.size_chart' | t }}</a>
+                              <div id="size-chart-content" class="hidden">
+                                <div class="size-chart">
+                                  <div class="size-chart__inner rte">
+                                    <h2>{{ pages[section.settings.size_chart_page].title }}</h2>
+                                    {{ pages[section.settings.size_chart_page].content }}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          {%- endif -%}
+                        {% endcapture %}
+                        <label {% if option.name == 'default' %}class="hidden"{% endif %} for="option-{{ option.name | handle }}-{{ product.id }}">
+                          {{- option.name -}}{%- if show_swatches -%}: <span class="cc-swatches__label">{{ option.selected_value }}</span>{%- endif -%}
+                          {%- if section.settings.variant_style == 'underlined' and show_swatches == false -%}{{ size_chart_html }}{%- endif -%}
+                        </label>
+                        <select id="option-{{ option.name | handle }}-{{ product.id }}"
+                                {% if section.settings.variant_style == 'underlined' or show_swatches %}class="noreplace" data-make-box{% endif %}
+                          {% if show_swatches %}data-colour-swatch="true"{% endif %}>
+                          {% for value in option.values %}
+                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value }}</option>
+                          {% endfor %}
+                        </select>
+                        {% if section.settings.variant_style == 'dropdown' or show_swatches %}{{ size_chart_html }}{% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  <select name="id" class="original-selector" aria-label="{{ 'products.product.selector_label' | t | escape }}">
+                    {% for variant in product.variants %}
+                      <option value="{{ variant.id }}"
+                        {% if variant == product.selected_or_first_available_variant %} selected="selected"{% endif %}
+                        {% if section.settings.show_inventory_notice and variant.inventory_management == 'shopify' and variant.inventory_quantity > 0 %}
+                          {% if section.settings.inventory_notice_threshold == 0 or variant.inventory_quantity <= section.settings.inventory_notice_threshold %}
+                            data-inventory="{{ variant.inventory_quantity }}"
+                          {% endif %}
+                        {% endif %}
+                              data-stock="{% if variant.inventory_management == 'shopify' and variant.inventory_quantity <= 0 %}out{% endif %}">{{ variant.title | escape }}</option>
+                    {% endfor %}
+                  </select>
+
+                {% else %}
+                  <input type="hidden" class="single_variant_availability" value="{{ product.variants.first.inventory_quantity }}"/>
+
+                  {% unless show_single_variant_details == false or product.has_only_default_variant %}
+                    {% assign swatches_shown = false %}
+                    {%- for option in product.options -%}
+                      {% assign show_swatches = false %}
+                      {% assign option_name_lowercase = option | downcase %}
+                      {% if settings.swatch_enabled and option_name_lowercase == swatch_option_name_lowercase %}
+                        {% assign show_swatches = true %}
+                        {% assign swatches_shown = true %}
+                      {% endif %}
+
+                      <div class="selector-wrapper {% if show_swatches %}cc-swatches option--{{ option_name_lowercase | handle }}{% else %}single-option{% endif %}"
+                           data-option-name="{{ option }}">
+                        {%- if option != 'Title' -%}
+                          {%- assign opt_idx = 'option' | append: forloop.index -%}
+                          <div data-cc-animate data-cc-animate-delay="0.6s" data-cc-animate-duration="1.5s">
+                            {%- capture size_chart_html -%}
+                            {%- assign option_name_lower = option | downcase -%}
+                            {%- assign target_option_name_lower = section.settings.size_chart_variant | downcase -%}
+                              {%- if section.settings.show_size_chart and option_name_lower == target_option_name_lower -%}
+                                <div class="size-chart-container">
+                                  <a href="#size-chart-content" class="size-chart-link">{{ 'products.product.size_chart' | t }}</a>
+                                  <div id="size-chart-content" class="hidden">
+                                    <div class="size-chart">
+                                      <div class="size-chart__inner rte">
+                                        <h2>{{ pages[section.settings.size_chart_page].title }}</h2>
+                                        {{ pages[section.settings.size_chart_page].content }}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              {%- endif -%}
+                            {%- endcapture -%}
+
+                            <label {% if show_swatches %}for="option-{{ option | handle }}-{{ product.id }}"{% endif %}>
+                              {{- option -}}{%- if show_swatches -%}: <span class="cc-swatches__label">{{ product.variants.first[opt_idx] }}</span>{%- endif -%}
+                              {%- unless show_swatches -%}{{- size_chart_html -}}:{%- endunless -%}
+                            </label>
+
+                            {% if show_swatches %}
+                              <select name="id" id="option-{{ option | handle }}-{{ product.id }}" class="noreplace is-single-swatch" data-make-box data-colour-swatch="true">
+                                <option value="{{ product.selected_or_first_available_variant.id }}" selected>{{ product.variants.first[opt_idx] }}</option>
+                              </select>
+
+                              {{- size_chart_html -}}
+                            {% else %}
+                              {{ product.variants.first[opt_idx] }}
+                            {% endif %}
+                          </div>
+                        {%- endif -%}
+                      </div>
+                    {%- endfor -%}
+                  {% endunless %}
+
+                  {% unless swatches_shown %}
+                    <select name="id" id="option-{{ option | handle }}-{{ product.id }}" class="noreplace hidden">
+                      <option value="{{ product.selected_or_first_available_variant.id }}" selected
+                            {% if section.settings.show_inventory_notice and product.selected_or_first_available_variant.inventory_management == 'shopify' and product.selected_or_first_available_variant.inventory_quantity > 0 %}
+                              {% if section.settings.inventory_notice_threshold == 0 or product.selected_or_first_available_variant.inventory_quantity <= section.settings.inventory_notice_threshold %}
+                                data-inventory="{{ product.selected_or_first_available_variant.inventory_quantity }}"
+                              {% endif %}
+                            {% endif %}
+                            data-stock="{% if product.selected_or_first_available_variant.inventory_management == 'shopify' and product.selected_or_first_available_variant.inventory_quantity <= 0 %}out{% endif %}">{{ product.variants.first[opt_idx] }}</option>
+                    </select>
+                  {% endunless %}
+                {% endif %}
+              </div>
+
+              {% if product.available %}
+                {% if section.settings.show_inventory_notice %}
+                  {%- capture inventory_notice -%}
+                    {%- if current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity > 0 -%}
+                      {%- if section.settings.inventory_notice_threshold == 0 or current_variant.inventory_quantity <= section.settings.inventory_notice_threshold -%}
+                        <div class="product-inventory-notice" data-cc-animate data-cc-animate-delay="0.7s">
+                          {{- 'products.labels.only_x_left' | t: quantity: current_variant.inventory_quantity -}}
+                        </div>
+                      {%- else -%}
+                        <div class="product-inventory-notice product-inventory-notice--no-inventory"></div>
+                      {%- endif -%}
+                    {%- else -%}
+                      <div class="product-inventory-notice product-inventory-notice--no-inventory"></div>
+                    {%- endif -%}
+                  {%- endcapture -%}
+                {% endif %}
+
+                {{ inventory_notice }}
+
+                {%- if section.settings.show_tax_and_shipping -%}
+                  {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
+                    <div class="rte product-policies">
+                      <p>
+                        {%- if shop.taxes_included -%}
+                          {{ 'products.general.include_taxes' | t }}
+                        {%- endif -%}
+                        {%- if shop.shipping_policy.body != blank -%}
+                          {{ 'products.general.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                        {%- endif -%}
+                      </p>
+                    </div>
+                  {%- endif -%}
+                {%- endif -%}
+
+                <div class="product-status-message"></div>
+
+                <div class="product-detail__form__action
+                  {% if section.settings.show_quantity_selector %}product-detail__form__options--with-quantity{% endif %}
+                  {% if section.settings.enable_payment_button and product.selling_plan_groups == empty %}with-payment-button{% endif %}
+                  {% if section.settings.show_pickup_availability %}with-store-availability{% endif %}"
+                     data-cc-animate data-cc-animate-delay="0.8s">
+
+                  {% if section.settings.show_quantity_selector %}
+                    <div class="quantity-wrapper border-radius-{{ settings.buttons_shape }}">
+                      <a href="#" data-quantity="down">&minus;</a>
+                      <input aria-label="{{ 'products.product.quantity' | t }}" class="select-on-focus" name="quantity" value="1" />
+                      <a href="#" data-quantity="up">&plus;</a>
+                    </div>
+                  {% else %}
+                    <input type="hidden" name="quantity" value="1" />
+                  {% endif %}
+                  <button class="button {% if section.settings.enable_payment_button and product.selling_plan_groups == empty %}alt{% endif %}" type="submit" name="add">
+                    {{ 'products.product.add_to_cart' | t }}
+                  </button>
+
+                  {% if section.settings.enable_payment_button and product.selling_plan_groups == empty %}
+                    {{ form | payment_button }}
+                  {% endif %}
+                </div>
+              {% else %}
+                <p>{{ 'products.product.product_unavailable' | t }}</p>
+              {% endif %}
+            </div>
+
+            {% if section.settings.show_pickup_availability == true %}
+              <div data-cc-animate data-cc-animate-delay="0.9s">
+                {% render 'store-availability', product: product, current_variant: current_variant %}
+              </div>
+            {% endif %}
+
+            {% if section.settings.show_backorder_text == true %}
+              <div data-cc-animate data-cc-animate-delay="0.9s">
+                {% render 'backorder', variant: product.selected_variant %}
+              </div>
+            {% endif %}
+          {% endform %}
+        {% else %}
+          <div class="product-detail__form__action product-detail__form__action--onboarding product-detail__form__options--with-quantity"
+               data-cc-animate data-cc-animate-delay="0.8s">
+
+            <div class="quantity-wrapper  border-radius-{{ settings.buttons_shape }}">
+              <a href="#" data-quantity="down">&minus;</a>
+              <input aria-label="{{ 'products.product.quantity' | t }}" class="select-on-focus" name="quantity" value="1" />
+              <a href="#" data-quantity="up">&plus;</a>
+            </div>
+
+            <button class="button alt onboarding-button" type="submit" name="add">
+              {{ 'products.product.add_to_cart' | t }}
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="product-detail__tab-container" data-cc-animate data-cc-animate-delay="1s">
+        {%- assign product_description_title = 'products.product.description' | t -%}
+
+        {% capture product_description %}
+          {%- if is_featured_product -%}
+            {%- if section.settings.description_under_title == false -%}
+              {{ section.settings.description }}
+            {%- endif -%}
+          {%- else -%}
+            {{ product.description }}
+          {%- endif -%}
+
+          {% unless section.settings.description_under_title %}
+            {% if section.settings.show_sku and product.selected_or_first_available_variant.sku != blank %}
+              <p class="sku {% if product.selected_or_first_available_variant.sku == blank %}sku--no-sku{% endif %} ">
+                {{ 'products.product.sku' | t }} <span class="sku__value">{{ product.selected_or_first_available_variant.sku }}</span>
+              </p>
+            {% endif %}
+          {% endunless %}
+
+          {%- if is_featured_product -%}
+            <p>
+              <a data-cc-animate-click href="{{ product.url }}" >{{ 'products.product.view_details' | t }}</a>
+            </p>
+          {%- endif -%}
+        {% endcapture %}
+
+        {% if section.settings.description_under_title and is_featured_product == false %}
+          {% assign product_description_title = "" %}
+          {% assign product_description = "" %}
+        {% endif %}
+
+        {%
+          render "tabs",
+          product: product,
+          display_type: section.settings.description_style,
+          show_reviews: settings.enable_reviews,
+          tab1_title: product_description_title,
+          tab1_content: product_description,
+          tab2_title: pages[section.settings.tab_2_page].title,
+          tab2_content: pages[section.settings.tab_2_page].content,
+          tab3_title: pages[section.settings.tab_3_page].title,
+          tab3_content: pages[section.settings.tab_3_page].content
+        %}
+      </div>
+
+      {% if collection.previous_product or collection.next_product %}
+        <div class="align-left product-detail__other-products" data-cc-animate data-cc-animate-delay="1s">
+          {% if collection.previous_product %}
+            <a data-cc-animate-click href="{{ collection.previous_product.url }}" title="{{ collection.previous_product.title }}">
+              {{ 'products.product.previous' | t }}
+            </a>
+          {% endif %}
+
+          {% if collection.previous_product and collection.next_product %}/{% endif %}
+
+          {% if collection.next_product %}
+            <a data-cc-animate-click href="{{ collection.next_product.url }}" title="{{ collection.next_product.title }}">
+              {{ 'products.product.next' | t }}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if section.settings.show_sharing_links %}
+        <div class="align-left product-detail__detail" data-cc-animate data-cc-animate-delay="0.9s">
+          {% render 'social-sharing', share_title: product.title, share_permalink: product.url, share_image: product %}
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="cc-product-json-{{ product.id }}">
+  {{ product | json }}
+</script>
+
+{% render 'structured-data-product', product: product, current_variant: current_variant %}
