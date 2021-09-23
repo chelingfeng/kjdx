@@ -101,6 +101,11 @@
                   {% endif %}
                 {% endform %}
               </div>
+              <div>
+                <a href="#" target="_blank"><img src="{{ 'icon3.jpg' | asset_url }}" width="25"></a>
+                <a href="https://www.facebook.com/Besile.shop" target="_blank"><img src="{{ 'icon1.jpg' | asset_url }}" width="25"></a>
+                <a href="https://www.youtube.com/channel/UCHYpZphfq7cZl6xxqkk133g" target="_blank"><img src="{{ 'icon2.jpg' | asset_url }}" width="25"></a>
+              </div>
             </div>
           {% endif %}
 
@@ -115,6 +120,7 @@
   <div class="wide-container section-footer__row-container {% if showing_localization %}section-footer__row-container--with-localization{% endif %}">
     <div class="section-footer__row section-footer__row-lower">
       <div class="section-footer__row__col">
+        <img src="{{ 'footer_pay.png' | asset_url }}" width="56%" class="footer_pay">
         {% if section.settings.show_payment_icons %}
           <div class="section-footer__payment-icons">
             {% for type in shop.enabled_payment_types %}

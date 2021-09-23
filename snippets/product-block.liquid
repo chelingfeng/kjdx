@@ -47,7 +47,7 @@
       </a>
     </div>
     <a data-cc-animate-click href="{{ product_url }}" class="caption upper">
-      <span class="title">{{ product.title }}</span>
+      <span class="title" style="font-size: 20px; font-weight: 400;">{{ product.title }}</span>
 
       {% if show_vendor %}
         <span class="vendor">{{ product.vendor }}</span>
@@ -55,11 +55,14 @@
 
       <div class="price">
         {% if product.price_varies %}{{ 'products.listing.from' | t }}{% endif %}
-        <span class="theme-money">{{ product.price | money }}</span>
-        {% if on_sale %}<span class="was-price theme-money">{{ product.compare_at_price | money }}</span>{% endif %}
+        <span class="theme-money" style="font-size: 20px;font-weight: 400;">{{ product.price | money }}</span>
+        {% if on_sale %}<span class="was-price theme-money" style="font-size: 20px;margin-left: 5px;">{{ product.compare_at_price | money }}</span>{% endif %}
 
         {%- assign variant = product.variants | sort: 'price' | first -%}
         {% render 'unit-price', variant: variant %}
+      </div>
+      <div style="display: block;padding: 14px 0 0 0;">
+        <button type="button" class="shopify-payment-button__button">Buy Now</button>
       </div>
     </a>
 

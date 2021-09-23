@@ -151,21 +151,22 @@
       {%- capture price_html -%}
         <div class="product-area__col product-area__col--price {% if type_empty and vendor_empty %}price-area--no-vendor{% else %}price-area--has-vendor{% endif %}
               {% if current_variant.unit_price_measurement %}price-area--has-unit-price{% else %}price-area--no-unit-price{% endif %}">
-          <div class="price-area" data-cc-animate
-               data-cc-animate-delay="0.25s" data-cc-animate-duration="1.5s">
-            {% if product != blank %}
-              {% if current_variant.compare_at_price > current_variant.price %}
-                <span class="was-price theme-money">{{ current_variant.compare_at_price | money }}</span>
-              {% endif %}
-              <div class="price theme-money">{{ current_variant.price | money }}</div>
-
-              {% render 'unit-price', variant: current_variant %}
-            {% else %}
-              <span class="was-price">{{ 2999 | money }}</span>
-              <div class="price">{{ 1999 | money }}</div>
-            {% endif %}
-          </div>
         </div>
+        <link rel="stylesheet" type="text/css" href="https://cdn.ryviu.com/v/static/css/r.87e8f8195.css">
+        <a href="#lt-block-reviews" style="height: 18px;">
+          <span class="r--stars-item" style="width: 78px !important;margin-bottom: 4px;margin-right: 4px;">
+            <span id="review_start" class="r--star-gray-active" style="display:none;width: calc(96.25%); height: 14px !important;overflow: hidden;">
+              <span class="r--star-grade my" style="width: 78px !important; color: rgb(253, 188, 0) !important;display: block;">
+                <span class="r-icon--star1" style="font-size: 14px !important; max-width: 14px !important;"></span>
+                <span class="r-icon--star1" style="font-size: 14px !important; max-width: 14px !important;"></span>
+                <span class="r-icon--star1" style="font-size: 14px !important; max-width: 14px !important;"></span>
+                <span class="r-icon--star1" style="font-size: 14px !important; max-width: 14px !important;"></span>
+                <span class="r-icon--star1 last" style="font-size: 14px !important; max-width: 14px !important;"></span>
+              </span>
+            </span>
+          </span>
+        </a>
+          <span style="width: 80px;display: none;" id="review_num"></span>
       {%- endcapture -%}
 
       <div class="product-area__details__header" data-cc-animate>
@@ -229,6 +230,14 @@
               <h1 class="product-area__details__title h2" data-cc-animate
                   data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s">{{ product.title }}</h1>
             {% endif %}
+            {% if product != blank %}
+              <div style="display: block;width: 100%;padding: 18px 0 0 0;">
+                {% if current_variant.compare_at_price > current_variant.price %}
+                  <span class="was-price theme-money" style="float: left;font-size: 26px;">{{ current_variant.compare_at_price | money }}</span>
+                {% endif %}
+                <div class="price theme-money" style="color:red;float: left;font-size: 26px;font-weight: 400;margin-left:20px">{{ current_variant.price | money }}</div>
+              </div>
+            {% endif %}
             {% if settings.enable_reviews %}
               <div data-cc-animate data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s">
                 <span class="shopify-product-reviews-badge" data-cc-animate
@@ -245,13 +254,16 @@
         </div>
       </div>
 
+      {% assign description = 'garbage <h1>TITLE</h1> moregarbage' %}
+      {% assign description = product.description | split: '<p>&lt;详情&gt;</p>' %}
+
       <div class="product-detail__form">
         {% if section.settings.description_under_title %}
           <div class="product-detail__form__description rte align-left" data-cc-animate data-cc-animate-delay="0.1s" data-cc-animate-duration="1.5s" >
             {%- if is_featured_product -%}
               {{ section.settings.description }}
             {%- else -%}
-              {{ product.description }}
+              {{ description[0] }}
             {%- endif -%}
 
             {% if section.settings.show_sku and product.selected_or_first_available_variant.sku != blank %}
@@ -520,9 +532,10 @@
             </button>
           </div>
         {% endif %}
+        <img src="{{ 'pay.png' | asset_url }}" width="100%">
       </div>
-
-      <div class="product-detail__tab-container" data-cc-animate data-cc-animate-delay="1s">
+      
+      <div class="product-detail__tab-container" data-cc-animate data-cc-animate-delay="1s" style="margin-top: -20px;">
         {%- assign product_description_title = 'products.product.description' | t -%}
 
         {% capture product_description %}
@@ -531,7 +544,7 @@
               {{ section.settings.description }}
             {%- endif -%}
           {%- else -%}
-            {{ product.description }}
+          {{ description[0] }}
           {%- endif -%}
 
           {% unless section.settings.description_under_title %}
@@ -595,9 +608,37 @@
     </div>
   </div>
 </div>
+<style>
+  .image-overlay img {
+    width: 90% !important;
+    margin-left: 5%
 
+  }
+</style>
+
+<div class="height--fixed image-overlay" style="margin: auto;max-width: 1200px;">
+  {{ description[1] }}
+</div>
 <script type="application/json" id="cc-product-json-{{ product.id }}">
   {{ product | json }}
 </script>
+<script>
+  var xhr = new XMLHttpRequest();
+  var payload = {};
+  var product_id = {{ product.id }};
+  xhr.open('POST', 'https://app.ryviu.io/frontend/client/get-reviews-data?domain=bseile.myshopify.com');
+  xhr.setRequestHeader('Content-Type', 'text/plain');
+  xhr.send('{"product_id": "'+product_id+'","page": 1,"type": "load-more","order": null,"filter": "all","feature": false,"domain": "bseile.myshopify.com"}');
+  xhr.onreadystatechange = function () {  
+      if (xhr.readyState == 4 && xhr.status == 200) {
+          var res = JSON.parse(xhr.responseText);
+          var review_num = document.getElementById('review_num');
+          var review_start = document.getElementById('review_start');
 
+          review_num.style.cssText = 'width:80px;display:block;'
+          review_num.innerHTML = res.ratings.total+' Reviews';
+          review_start.style.cssText = 'width: calc('+((res.ratings.avg) * 20)+'%); height: 14px !important;overflow: hidden;display:block'
+      } 
+  }
+</script>
 {% render 'structured-data-product', product: product, current_variant: current_variant %}
